@@ -17,7 +17,7 @@
  *
  */
 
-package tk.elevenk.proxysetter;
+package tk.elevenk.proxysetter.proxy;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;

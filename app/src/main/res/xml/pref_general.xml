@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="配置">
+        <SwitchPreference
+            android:key="proxy_switch"
+            android:summary="打开/关闭代理"
+            android:title="代理开关" />
+
+        <ListPreference
+            android:key="proxy_profiles"
+            android:summary="无"
+            android:title="配置文件" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="代理设置">
+        <Preference
+            android:key="proxy_host"
+            android:summary="代理服务器的IP地址"
+            android:title="服务器主机名" />
+        <Preference
+            android:key="proxy_port"
+            android:summary="8888"
+            android:title="服务器端口号" />
+        <ListPreference
+            android:key="proxy_wifi_name"
+            android:summary="请选择需要连接的WiFi名称"
+            android:title="WiFi 名称" />
+        <Preference
+            android:key="proxy_wifi_pwd"
+            android:summary="请输入WiFi密码"
+            android:title="WiFi 密码" />
+
+    </PreferenceCategory>
+</PreferenceScreen>

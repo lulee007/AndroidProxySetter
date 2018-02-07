@@ -17,7 +17,7 @@
  *
  */
 
-package tk.elevenk.proxysetter;
+package tk.elevenk.proxysetter.proxy;
 
 import android.content.Intent;
 import android.util.Log;

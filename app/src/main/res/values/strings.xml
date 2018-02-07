@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">WiFi代理</string>
+    <string name="action_about">关于</string>
+    <string name="action_rename">编辑</string>
+    <string name="action_delete">删除</string>
+    <string name="pref_header_general">配置</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>

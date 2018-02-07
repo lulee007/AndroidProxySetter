@@ -72,5 +72,9 @@ proguard/
 
 # Log Files
 *.log
+.settings/
+.vscode/
+.project
+.classpath
 
 
