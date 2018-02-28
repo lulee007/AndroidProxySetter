@@ -43,11 +43,13 @@ import tk.elevenk.proxysetter.proxy.ProxyChangeAsync;
 import tk.elevenk.proxysetter.rxbus.RxBus;
 import tk.elevenk.proxysetter.rxbus.RxBusEvent;
 
+import static android.content.Context.MODE_PRIVATE;
 import static android.content.Context.MODE_WORLD_READABLE;
 import static tk.elevenk.proxysetter.proxy.ProxyChangeParams.CLEAR;
 import static tk.elevenk.proxysetter.proxy.ProxyChangeParams.HOST;
 import static tk.elevenk.proxysetter.proxy.ProxyChangeParams.KEY;
 import static tk.elevenk.proxysetter.proxy.ProxyChangeParams.PORT;
+import static tk.elevenk.proxysetter.proxy.ProxyChangeParams.RESET_WIFI;
 import static tk.elevenk.proxysetter.proxy.ProxyChangeParams.SSID;
 
 
@@ -99,7 +101,7 @@ public class ProxySetterFragment extends PreferenceFragment implements Preferenc
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getPreferenceManager().setSharedPreferencesMode(MODE_WORLD_READABLE);
+        getPreferenceManager().setSharedPreferencesMode(MODE_PRIVATE);
         addPreferencesFromResource(R.xml.pref_general);
 
         loadData();
@@ -305,7 +307,7 @@ public class ProxySetterFragment extends PreferenceFragment implements Preferenc
                     public void accept(List<String> strings) throws Exception {
                         proxyWifiName.setEntryValues(strings.toArray(new String[]{}));
                         proxyWifiName.setEntries(strings.toArray(new String[]{}));
-                        if(currentProfile.getWifiName()!= null && !currentProfile.getWifiName().isEmpty()) {
+                        if (currentProfile != null && currentProfile.getWifiName() != null && !currentProfile.getWifiName().isEmpty()) {
                             proxyWifiName.setValue(currentProfile.getWifiName());
                         }
                     }
@@ -542,15 +544,15 @@ public class ProxySetterFragment extends PreferenceFragment implements Preferenc
 
     }
 
-    private void saveCurrentProfile(){
-        ProxyPreferenceUtil.getInstance().saveCurrentProfile(getActivity(),currentProfile);
+    private void saveCurrentProfile() {
+        ProxyPreferenceUtil.getInstance().saveCurrentProfile(getActivity(), currentProfile);
     }
 
     private void setProxy(Boolean enable) {
         Intent intent = new Intent();
         intent.putExtra(SSID, currentProfile.getWifiName());
         intent.putExtra(KEY, currentProfile.getWifiPwd());
-//        intent.putExtra(RESET_WIFI,"true");
+        intent.putExtra(RESET_WIFI,"true");
         if (!enable) {
             //关闭代理
             intent.putExtra(CLEAR, "true");

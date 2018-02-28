@@ -298,7 +298,7 @@ public class ProxyChangeExecutor extends BroadcastReceiver {
 
 
 	private void showGeneralError(int code) {
-		String errorMessage = "Error: proxy not set. Try clearing the proxy setting manually first. Error Code: " + code;
+		String errorMessage = "设置代理错误，请尝试关闭再打开WIFI或者手动清除代理，错误代码: " + code;
 		proxyChangeAsync.onProgressUpdate(errorMessage);
 	}
 
