@@ -19,6 +19,7 @@
 
 package tk.elevenk.proxysetter;
 
+import android.Manifest;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
@@ -29,6 +30,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
+
+import com.tbruyelle.rxpermissions2.RxPermissions;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -73,7 +76,28 @@ public class MainActivity extends AppCompatActivity {
 
         FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.fragment_main, ProxySetterFragment.newInstance()).commit();
-
+        new RxPermissions(this)
+                .request(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+                .doOnSubscribe(new Consumer<Disposable>() {
+                    @Override
+                    public void accept(Disposable disposable) throws Exception {
+                        disposableBag.add(disposable);
+                    }
+                })
+                .subscribe(new Consumer<Boolean>() {
+                    @Override
+                    public void accept(Boolean aBoolean) throws Exception {
+                        if (!aBoolean) {
+                            Toast.makeText(MainActivity.this, "需要该读取Wifi列表", Toast.LENGTH_SHORT).show();
+                            finish();
+                        }else{
+                            RxBus.get().post(new RxBusEvent(RxBusEvent.TYPE_PROXY_LOAD_WIFI,""));
+                        }
+                    }
+                });
     }
 
     private void bindEvents() {

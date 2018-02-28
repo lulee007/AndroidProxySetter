@@ -71,6 +71,16 @@ public class ProxyPreferenceUtil {
         editor.commit();
     }
 
+    public void saveCurrentProfile(Context context,ProxyProfile proxyProfile) {
+        SharedPreferences sharedPref = context.getSharedPreferences(PREFERENCE_PROXY_KEY, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        if(proxyProfile!= null) {
+            cachedProfiles.put(proxyProfile.getProfileName(), proxyProfile);
+            editor.putString(PROFILES_KEY, new Gson().toJson(cachedProfiles));
+        }
+        editor.commit();
+    }
+
     public String getCurrentProfile(Context context) {
         SharedPreferences sharedPref = context.getSharedPreferences(PREFERENCE_PROXY_KEY, Context.MODE_PRIVATE);
         return sharedPref.getString(CURRENT_PROFILE_KEY, "无");

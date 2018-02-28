@@ -1,5 +1,6 @@
 package tk.elevenk.proxysetter;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.net.wifi.ScanResult;
@@ -20,6 +21,8 @@ import android.widget.Toast;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.orhanobut.logger.Logger;
+import com.tbruyelle.rxpermissions2.RxPermissions;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -185,6 +188,26 @@ public class ProxySetterFragment extends PreferenceFragment implements Preferenc
                         }
                     }
                 });
+
+        RxBus.get().toObservable(RxBusEvent.class)
+                .doOnSubscribe(new Consumer<Disposable>() {
+                    @Override
+                    public void accept(Disposable disposable) throws Exception {
+                        disposableBag.add(disposable);
+                    }
+                })
+                .filter(new Predicate<RxBusEvent>() {
+                    @Override
+                    public boolean test(RxBusEvent rxBusEvent) throws Exception {
+                        return rxBusEvent.getType() == RxBusEvent.TYPE_PROXY_LOAD_WIFI;
+                    }
+                })
+                .subscribe(new Consumer<RxBusEvent>() {
+                    @Override
+                    public void accept(RxBusEvent rxBusEvent) throws Exception {
+                        loadWiFiSSIDs();
+                    }
+                });
     }
 
 
@@ -247,10 +270,11 @@ public class ProxySetterFragment extends PreferenceFragment implements Preferenc
     }
 
     private void loadWiFiSSIDs() {
+
         WifiManager wifiManager = (WifiManager) getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         List<ScanResult> results = wifiManager.getScanResults();
 
-
+        Logger.d(results);
         Observable.fromIterable(results)
                 .doOnSubscribe(new Consumer<Disposable>() {
                     @Override
@@ -281,6 +305,9 @@ public class ProxySetterFragment extends PreferenceFragment implements Preferenc
                     public void accept(List<String> strings) throws Exception {
                         proxyWifiName.setEntryValues(strings.toArray(new String[]{}));
                         proxyWifiName.setEntries(strings.toArray(new String[]{}));
+                        if(currentProfile.getWifiName()!= null && !currentProfile.getWifiName().isEmpty()) {
+                            proxyWifiName.setValue(currentProfile.getWifiName());
+                        }
                     }
                 });
     }
@@ -344,6 +371,7 @@ public class ProxySetterFragment extends PreferenceFragment implements Preferenc
                     public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
                         preference.setSummary("******");
                         currentProfile.setWifiPwd(input.toString());
+                        saveCurrentProfile();
                     }
                 })
                 .title(preference.getTitle())
@@ -359,6 +387,7 @@ public class ProxySetterFragment extends PreferenceFragment implements Preferenc
                     public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
                         preference.setSummary(input);
                         currentProfile.setHostPort(Integer.parseInt(input.toString()));
+                        saveCurrentProfile();
                     }
                 })
                 .title(preference.getTitle())
@@ -367,13 +396,18 @@ public class ProxySetterFragment extends PreferenceFragment implements Preferenc
     }
 
     private void showSetProxyHostDialog(final Preference preference) {
+        String perfill = "";
+        if (preference.getSummary() != null) {
+            perfill = preference.getSummary().toString().equalsIgnoreCase("代理服务器的IP地址") ? "" : preference.getSummary().toString();
+        }
         new MaterialDialog.Builder(getActivity())
                 .inputType(InputType.TYPE_TEXT_VARIATION_URI)
-                .input("请输入代理服务器的IP地址", preference.getSummary().toString().equalsIgnoreCase("代理服务器的IP地址") ? "" : preference.getSummary(), false, new MaterialDialog.InputCallback() {
+                .input("请输入代理服务器的IP地址", perfill, false, new MaterialDialog.InputCallback() {
                     @Override
                     public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
                         preference.setSummary(input);
                         currentProfile.setHostName(input.toString());
+                        saveCurrentProfile();
                     }
                 })
                 .title(preference.getTitle())
@@ -404,19 +438,20 @@ public class ProxySetterFragment extends PreferenceFragment implements Preferenc
             return;
         } else {
             currentProfile.setWifiName(ssid);
+            saveCurrentProfile();
         }
 
     }
 
     private void proxySwitchToggled(final Preference preference, final Object newValue) {
-        System.out.println("开关状态变化了"+newValue);
+        Logger.d("开关状态变化了" + newValue);
         if (!proxySwitch.isEnabled()) {
-            System.out.println("正在处理上一次的状态，取消本次处理");
+            Logger.d("正在处理上一次的状态，取消本次处理");
             return;
         }
 
         proxySwitch.setEnabled(false);
-        System.out.println("设置开关为不可点击");
+        Logger.d("设置开关为不可点击");
         final Boolean enable = !(Boolean) newValue;
         Boolean checked = false;
         if (currentProfile != null) {
@@ -428,10 +463,9 @@ public class ProxySetterFragment extends PreferenceFragment implements Preferenc
             RxBus.get().post(new RxBusEvent(RxBusEvent.TYPE_PROXY_ENABLE, enable));
             if (!enable && !proxySwitch.isChecked() ||
                     (enable && proxySwitch.isChecked())) {
-//            setProxy(!enable);
-
+                setProxy(!enable);
             }
-            if(!enable){
+            if (!enable) {
                 checked = true;
             }
         } else {
@@ -452,8 +486,8 @@ public class ProxySetterFragment extends PreferenceFragment implements Preferenc
                 .doOnNext(new Consumer<String>() {
                     @Override
                     public void accept(String s) throws Exception {
-                        if ((Boolean)newValue && !finalChecked) {
-                            System.out.println("还原设置开关为关闭");
+                        if ((Boolean) newValue && !finalChecked) {
+                            Logger.d("还原设置开关为关闭");
                             proxySwitch.setChecked(false);
                         }
                     }
@@ -464,7 +498,7 @@ public class ProxySetterFragment extends PreferenceFragment implements Preferenc
                 .subscribe(new Consumer<String>() {
                     @Override
                     public void accept(String s) throws Exception {
-                        System.out.println("设置开关为可点击");
+                        Logger.d("设置开关为可点击");
                         proxySwitch.setEnabled(true);
                     }
                 });
@@ -508,6 +542,9 @@ public class ProxySetterFragment extends PreferenceFragment implements Preferenc
 
     }
 
+    private void saveCurrentProfile(){
+        ProxyPreferenceUtil.getInstance().saveCurrentProfile(getActivity(),currentProfile);
+    }
 
     private void setProxy(Boolean enable) {
         Intent intent = new Intent();
@@ -537,6 +574,5 @@ public class ProxySetterFragment extends PreferenceFragment implements Preferenc
         }
         return true;
     }
-
 
 }
