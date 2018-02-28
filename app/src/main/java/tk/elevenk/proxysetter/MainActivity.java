@@ -31,6 +31,7 @@ import android.view.MenuItem;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.pgyersdk.update.PgyUpdateManager;
 import com.tbruyelle.rxpermissions2.RxPermissions;
 
 import butterknife.BindView;
@@ -66,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
 
         configViews();
         bindEvents();
+        PgyUpdateManager.register(this, "proxysetter");
 
     }
 

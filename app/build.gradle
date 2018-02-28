@@ -26,8 +26,8 @@ android {
         applicationId 'tk.elevenk.proxysetter'
         minSdkVersion 18
         targetSdkVersion 26
-        versionCode 5
-        versionName "0.2"
+        versionCode 8
+        versionName "0.8"
     }
     signingConfigs {
         emulatorSystemKeystore {

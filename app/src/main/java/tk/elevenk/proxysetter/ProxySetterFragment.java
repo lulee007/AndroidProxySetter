@@ -123,7 +123,10 @@ public class ProxySetterFragment extends PreferenceFragment implements Preferenc
         loadProfiles();
         loadWiFiSSIDs();
 
-        proxySwitchToggled(proxySwitch, ((SwitchPreference) proxySwitch).isChecked());
+        proxySwitchToggled(proxySwitch, proxySwitch.isChecked());
+        if (profiles == null || profiles.isEmpty()) {
+            selectProxyProfile(proxyProfiles, "-1");
+        }
     }
 
     private void loadData() {
@@ -140,16 +143,20 @@ public class ProxySetterFragment extends PreferenceFragment implements Preferenc
         proxyWifiName = (ListPreference) findPreference(PROXY_WIFI_NAME);
         proxyWifiPwd = findPreference(PROXY_WIFI_PWD);
         proxyProfiles = (ListPreference) findPreference(PROXY_PROFILES);
-        if (currentProfile != null) {
-            proxyHost.setSummary(currentProfile.getHostName());
-            proxyPort.setSummary(currentProfile.getHostPort() + "");
-            proxyWifiName.setSummary(currentProfile.getWifiName());
-            proxyWifiName.setValue(currentProfile.getWifiName());
-            proxyWifiPwd.setSummary("******");
-            proxyProfiles.setSummary(currentProfile.getProfileName());
-            proxyProfiles.setValue(currentProfile.getProfileName());
-        }
+        fillPreference();
 
+    }
+
+    private void fillPreference(){
+        if (currentProfile != null) {
+        proxyHost.setSummary(currentProfile.getHostName());
+        proxyPort.setSummary(currentProfile.getHostPort() + "");
+        proxyWifiName.setSummary(currentProfile.getWifiName());
+        proxyWifiName.setValue(currentProfile.getWifiName());
+        proxyWifiPwd.setSummary("******");
+        proxyProfiles.setSummary(currentProfile.getProfileName());
+        proxyProfiles.setValue(currentProfile.getProfileName());
+    }
     }
 
     private void bindEvents() {
@@ -254,7 +261,9 @@ public class ProxySetterFragment extends PreferenceFragment implements Preferenc
                         loadProfiles();
                         proxyProfiles.setValue("");
                         proxyProfiles.setSummary("无");
-                        currentProfile = null;
+                        if (profiles == null || profiles.isEmpty()) {
+                            selectProxyProfile(proxyProfiles, "-1");
+                        }
 
                     }
                 })
@@ -541,6 +550,7 @@ public class ProxySetterFragment extends PreferenceFragment implements Preferenc
             }
         }
         ProxyPreferenceUtil.getInstance().saveCurrentProfile(getActivity(), currentProfile.getProfileName());
+        fillPreference();
 
     }
 
@@ -552,7 +562,7 @@ public class ProxySetterFragment extends PreferenceFragment implements Preferenc
         Intent intent = new Intent();
         intent.putExtra(SSID, currentProfile.getWifiName());
         intent.putExtra(KEY, currentProfile.getWifiPwd());
-        intent.putExtra(RESET_WIFI,"true");
+        intent.putExtra(RESET_WIFI, "true");
         if (!enable) {
             //关闭代理
             intent.putExtra(CLEAR, "true");

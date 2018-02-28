@@ -13,7 +13,7 @@ public class PSApplication extends BaseApplication {
     public void onCreate() {
         super.onCreate();
 
-//        PgyCrashManager.register(this);
+        PgyCrashManager.register(this);
 
 
     }
